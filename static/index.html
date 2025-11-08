@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Comparador de Precios</title>
+  <meta name="description" content="Web app para comparar precios por vendedor, con scraping y carga masiva." />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Comparador de Precios</h1>
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="active" role="tab" aria-selected="true" aria-controls="input" id="tab-input" data-tab="input">Input</button>
+      <button role="tab" aria-selected="false" aria-controls="search" id="tab-search" data-tab="search">BUSCAR</button>
+      <button role="tab" aria-selected="false" aria-controls="export" id="tab-export" data-tab="export">Exportar</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="input" role="tabpanel" aria-labelledby="tab-input" class="active">
+      <h2>Importar productos</h2>
+
+      <div class="import">
+        <div>
+          <label for="fileInput">Archivo (.csv o .xlsx)</label>
+          <input id="fileInput" type="file" accept=".csv, .xlsx" />
+          <button id="parseFile" class="primary">Cargar archivo</button>
+        </div>
+
+        <div>
+          <button id="openPaste" class="secondary">Pegar desde portapapeles</button>
+          <div id="pasteBox" class="modal" style="display:none">
+            <div class="modal-inner">
+              <h3>Pegar tabla</h3>
+              <textarea id="pasteArea" rows="10" placeholder="Pegá filas con columnas separadas por TAB..."></textarea>
+              <div class="modal-actions">
+                <button id="importPaste" class="primary">Importar</button>
+                <button id="closePaste" class="secondary">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="hint">Máx: 5 ítems por lote.</p>
+      </div>
+
+      <h2>Productos</h2>
+      <div class="toolbar">
+        <button id="addProduct" class="secondary">Agregar producto</button>
+      </div>
+      <div class="table-wrap">
+        <table id="productsTable">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Capacidad</th>
+              <th>EAN/Código</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2>Vendedores</h2>
+      <div class="toolbar">
+        <button id="addVendor" class="secondary">Agregar vendedor</button>
+      </div>
+      <div class="table-wrap">
+        <table id="vendorsTable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>URL</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="search" role="tabpanel" aria-labelledby="tab-search">
+      <h2>Parámetros</h2>
+      <div class="params">
+        <label>Headless
+          <select id="headless">
+            <option value="true" selected>Sí</option>
+            <option value="false">No</option>
+          </select>
+        </label>
+        <label>Modo escritura inmediata
+          <select id="immediate">
+            <option value="true" selected>Sí</option>
+            <option value="false">No</option>
+          </select>
+        </label>
+        <label>Min delay (s)
+          <input id="minDelay" type="number" min="0" value="2" />
+        </label>
+        <label>Max delay (s)
+          <input id="maxDelay" type="number" min="0" value="5" />
+        </label>
+        <label>Incluir sitio oficial
+          <select id="official">
+            <option value="false" selected>No</option>
+            <option value="true">Sí</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="start" class="primary">Iniciar búsqueda</button>
+        <button id="stop" class="danger">Detener</button>
+      </div>
+
+      <h2>Estado en tiempo real</h2>
+      <div id="status" class="status">Listo</div>
+      <div id="runLog" class="log" aria-live="polite" aria-atomic="false"></div>
+
+      <h2>Tabla de comparación</h2>
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Marca</th>
+              <th>Carrefour</th>
+              <th>Cetrogar</th>
+              <th>CheekSA</th>
+              <th>Frávega</th>
+              <th>Libertad</th>
+              <th>Masonline</th>
+              <th>Megatone</th>
+              <th>Musimundo</th>
+              <th>Naldo</th>
+              <th>Vital</th>
+              <th>Marca (Sitio oficial)</th>
+              <th>Fecha de Consulta</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="export" role="tabpanel" aria-labelledby="tab-export">
+      <h2>Exportar resultados</h2>
+      <div class="actions">
+        <button id="toCSV" class="primary">Descargar CSV</button>
+        <button id="copyTable" class="secondary">Copiar tabla</button>
+        <label>Nombre de hoja
+          <input id="sheetName" type="text" value="Comparación Precios Electrodomésticos" />
+        </label>
+        <button id="toSheets" class="primary">Enviar a Google Sheets</button>
+      </div>
+      <p class="hint">Para Google Sheets, sube credentials.json o configura GOOGLE_CREDENTIALS_BASE64 en el backend.</p>
+    </section>
+  </main>
+
+  <footer>
+    <small>&copy; 2025 Comparador de Precios</small>
+  </footer>
+
+  <script>
+    // Config opcional para backends detrás de proxy
+    window.API_BASE = "";
+  </script>
+  <script src="/static/script.js"></script>
+</body>
+</html>
