@@ -1,7 +1,8 @@
 # This file is required by AWS Elastic Beanstalk
 # It imports the Flask application from app.py
 
-from app import app as application
+from app import app
 
-# AWS Elastic Beanstalk expects the application object to be called 'application'
+# Create application variable for AWS Elastic Beanstalk
+application = app
 
