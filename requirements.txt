@@ -1,0 +1,13 @@
+Flask>=3.0
+Flask-Cors>=4.0
+gunicorn>=21.2
+requests>=2.31
+beautifulsoup4>=4.12
+pandas>=2.2
+numpy>=1.26
+pdfminer.six>=20231228
+pypdfium2>=4.30
+pytesseract>=0.3.10
+curl_cffi>=0.6.0
+gspread>=6.0.0
+oauth2client>=4.1.3
